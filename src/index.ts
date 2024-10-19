@@ -6,31 +6,40 @@ import compression from 'compression';
 import cors from 'cors';
 
 import router from './router';
-import mongoose from 'mongoose';
-require('dotenv').config();
+import database from './db/connector'; // Adjust path as needed
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
-app.use(cors({
-    credentials:true
-}));
+const port = process.env.PORT as string;
 
+// Middleware setup
+app.use(cors({ credentials: true }));
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
 
+// Create HTTP server
 const server = http.createServer(app);
-const port = process.env.PORT as string;
 
-server.listen(port,()=>{
-    console.log(`active on http://localhost:${port}/`)
-});
+// Connect to the database
+async function startServer() {
+    try {
+        await database.connect();
+        console.log('Connected to the database');
 
-const MONGO_URL = process.env.MONGO_URL as string;
+        // Start the server
+        server.listen(port, () => {
+            console.log(`Server active on http://localhost:${port}/`);
+        });
+    } catch (error) {
+        console.error('Error connecting to the database:', error);
+        process.exit(1); // Exit if the database connection fails
+    }
+}
 
-mongoose.Promise = global.Promise;
-mongoose.connect(MONGO_URL);
-mongoose.connection.on('error',(error:Error)=>{
-    console.log(error)
-})
+// Use the router
+app.use('/', router());
 
-app.use('/',router());
+// Start the server
+startServer();
