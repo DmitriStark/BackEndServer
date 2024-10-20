@@ -61,8 +61,9 @@ export const updateUser =async (reg:express.Request,res:express.Response) => {
 
 export const getUser = async (req: express.Request, res: express.Response) => {
     try {
-        const { id } = req.params; // Extract ID from request parameters
-        const user = await getUserById(id); // Fetch user from the database
+        const userId = req.params.id; // Extract ID from request parameters
+        console.log(userId)
+        const user = await getUserById(userId); // Fetch user from the database
 
         if (!user) {
             return res.sendStatus(404); // User not found
@@ -70,8 +71,9 @@ export const getUser = async (req: express.Request, res: express.Response) => {
 
         return res.status(200).json(user); // Return the found user
     } catch (error) {
-        console.log(error);
-        return res.sendStatus(400);
+        console.error('Error fetching user:', error); // Log the error for debugging
+        return res.sendStatus(500); // Respond with a 500 Internal Server Error status
     }
-}
+};
+
 
